@@ -4,6 +4,7 @@ module ActiveMerchant #:nodoc:
     HPCI_CONST = {
         #Baseline API Parameters
         :PXYPARAM_PXY_TRANSACTION_CUSISO => 'pxyTransaction.txnCurISO',
+        :PXYPARAM_PXY_TRANSACTION_PAYNAME => 'pxyTransaction.txnPayName',
         :PXYPARAM_PXY_TRANSACTION_AMOUNT => 'pxyTransaction.txnAmount',
         :PXYPARAM_PXY_TRANSACTION_PROCESSOR_REFID => 'pxyTransaction.processorRefId',
 
@@ -121,6 +122,11 @@ module ActiveMerchant #:nodoc:
         post['apiType'] = 'pxyhpci'
         post['userName'] = @options[:login]
         post['userPassKey'] = @options[:password]
+
+        ## hack, hack, hack, add support for pxyTransaction.txnPayName
+        if !options[:profile].blank?
+          post[HPCI_CONST[:PXYPARAM_PXY_TRANSACTION_PAYNAME]] = options[:profile]
+        end
 
         ## set currency parameter, need access to money
         if !options[:currency].blank?
