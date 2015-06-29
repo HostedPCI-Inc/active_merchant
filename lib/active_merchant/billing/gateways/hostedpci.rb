@@ -187,7 +187,7 @@ module ActiveMerchant #:nodoc:
       def add_creditcard(post, creditcard)
         post['pxyCreditCard.creditCardNumber']   = creditcard.number
         post['pxyCreditCard.cardCodeVerification']  = creditcard.verification_value if creditcard.verification_value?
-        post['pxyCreditCard.expirationMonth']   = creditcard.month.to_s
+        post['pxyCreditCard.expirationMonth']   = sprintf('%02d', creditcard.month.to_s)
         post['pxyCreditCard.expirationYear']   = creditcard.year.to_s
         if creditcard.brand.nil? || creditcard.brand.empty?
           post[HPCI_CONST[:PXYPARAM_PXY_CC_CARDTYPE]]   = 'any'
