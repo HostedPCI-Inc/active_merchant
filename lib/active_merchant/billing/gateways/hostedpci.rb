@@ -199,15 +199,16 @@ module ActiveMerchant #:nodoc:
       def get_message_from_response(results)
         msg = 'not set'
         if (results.nil? || results.empty? || results[:call_status] != HPCI_CONST[:PXYRESP_CALL_STATUS_SUCCESS])
-          msg = 'API Call Error, check API Parameters.'
+          # msg = 'API Call Error, check API Parameters.'
 
           ##add error parameters that may be present
-          if (!results[:error_id].nil?)
-            msg += ' Error_ID: ' + results[:error_id]
-          end
-          if (!results[:error_msg].nil?)
-            msg += '; Error Message: ' + results[:error_msg]
-          end
+          # if (!results[:error_id].nil?)
+          #   msg += ' Error_ID: ' + results[:error_id]
+          # end
+          # if (!results[:error_msg].nil?)
+          #   msg += '; Error Message: ' + results[:error_msg]
+          # end
+          msg = results
         else
           #basic call succesful, contruct result message
           msg = 'description: ' + results[:status_description] +
