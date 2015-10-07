@@ -4,6 +4,7 @@ module ActiveMerchant #:nodoc:
     HPCI_CONST = {
         #Baseline API Parameters
         :PXYPARAM_PXY_TRANSACTION_CUSISO => 'pxyTransaction.txnCurISO',
+        :PXYPARAM_PXY_TRANSACTION_PAYNAME => 'pxyTransaction.txnPayName',
         :PXYPARAM_PXY_TRANSACTION_AMOUNT => 'pxyTransaction.txnAmount',
         :PXYPARAM_PXY_TRANSACTION_PROCESSOR_REFID => 'pxyTransaction.processorRefId',
 
@@ -122,6 +123,11 @@ module ActiveMerchant #:nodoc:
         post['userName'] = @options[:login]
         post['userPassKey'] = @options[:password]
 
+        ## hack, hack, hack, add support for pxyTransaction.txnPayName
+        if !options[:profile].blank?
+          post[HPCI_CONST[:PXYPARAM_PXY_TRANSACTION_PAYNAME]] = options[:profile]
+        end
+
         ## set currency parameter, need access to money
         if !options[:currency].blank?
           post[HPCI_CONST[:PXYPARAM_PXY_TRANSACTION_CUSISO]] = options[:currency]
@@ -169,6 +175,9 @@ module ActiveMerchant #:nodoc:
       end ##END: add_address
 
       def add_invoice(post, options)
+        post['pxyTransaction.merchantRefId'] = "merRef:#{SecureRandom.hex(4)}"
+
+
         if options.has_key? :order_id
           post['pxyOrder.invoiceNumber'] = options[:order_id]
           post['pxyTransaction.merchantRefId'] = "merRef:" + options[:order_id]
@@ -181,7 +190,7 @@ module ActiveMerchant #:nodoc:
       def add_creditcard(post, creditcard)
         post['pxyCreditCard.creditCardNumber']   = creditcard.number
         post['pxyCreditCard.cardCodeVerification']  = creditcard.verification_value if creditcard.verification_value?
-        post['pxyCreditCard.expirationMonth']   = creditcard.month.to_s
+        post['pxyCreditCard.expirationMonth']   = sprintf('%02d', creditcard.month.to_s)
         post['pxyCreditCard.expirationYear']   = creditcard.year.to_s
         if creditcard.brand.nil? || creditcard.brand.empty?
           post[HPCI_CONST[:PXYPARAM_PXY_CC_CARDTYPE]]   = 'any'
@@ -193,20 +202,21 @@ module ActiveMerchant #:nodoc:
       def get_message_from_response(results)
         msg = 'not set'
         if (results.nil? || results.empty? || results[:call_status] != HPCI_CONST[:PXYRESP_CALL_STATUS_SUCCESS])
-          msg = 'API Call Error, check API Parameters.'
+          # msg = 'API Call Error, check API Parameters.'
 
           ##add error parameters that may be present
-          if (!results[:error_id].nil?)
-            msg += ' Error_ID: ' + results[:error_id]
-          end
-          if (!results[:error_msg].nil?)
-            msg += '; Error Message: ' + results[:error_msg]
-          end
+          # if (!results[:error_id].nil?)
+          #   msg += ' Error_ID: ' + results[:error_id]
+          # end
+          # if (!results[:error_msg].nil?)
+          #   msg += '; Error Message: ' + results[:error_msg]
+          # end
+          msg = results
         else
           #basic call succesful, contruct result message
-          msg = 'description: ' + results[:status_description] +
-              '; status_code:' + results[:status_code] +
-              '; status_name:' + results[:status_name]
+          msg = ['description: ',results[:status_description],
+              '; status_code:',results[:status_code],
+              '; status_name:',results[:status_name]].join('')
         end
         msg
       end
