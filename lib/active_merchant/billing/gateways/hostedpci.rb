@@ -175,6 +175,9 @@ module ActiveMerchant #:nodoc:
       end ##END: add_address
 
       def add_invoice(post, options)
+        post['pxyTransaction.merchantRefId'] = "merRef:#{SecureRandom.hex(4)}"
+
+
         if options.has_key? :order_id
           post['pxyOrder.invoiceNumber'] = options[:order_id]
           post['pxyTransaction.merchantRefId'] = "merRef:" + options[:order_id]
@@ -211,9 +214,9 @@ module ActiveMerchant #:nodoc:
           msg = results
         else
           #basic call succesful, contruct result message
-          msg = 'description: ' + results[:status_description] +
-              '; status_code:' + results[:status_code] +
-              '; status_name:' + results[:status_name]
+          msg = ['description: ',results[:status_description],
+              '; status_code:',results[:status_code],
+              '; status_name:',results[:status_name]].join('')
         end
         msg
       end
